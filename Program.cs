@@ -29,9 +29,9 @@ namespace rt
                         new Color(0.1, 0.0, 0.0, 1.0),
                         new Color(0.3, 0.0, 0.0, 1.0),
                         new Color(0.5, 0.0, 0.0, 1.0),
-                        10
+                        1
                     ),
-                    new Color(0.8, 0.0, 0.0, 1.0)),
+                    new Color(0.2, 0.2, 0.2, 1.0)),
                 new Sphere(
                     new Vector(-10.0, 0.0, 100.0),
                     10.0,
@@ -39,7 +39,7 @@ namespace rt
                         new Color(0.1, 0.1, 0.0, 1.0),
                         new Color(0.3, 0.3, 0.0, 1.0),
                         new Color(0.5, 0.5, 0.0, 1.0),
-                        10
+                        2
                     ),
                     new Color(0.8, 0.8, 0.0, 1.0)
                 ),
@@ -50,7 +50,7 @@ namespace rt
                         new Color(0.0, 0.1, 0.0, 1.0),
                         new Color(0.0, 0.3, 0.0, 1.0),
                         new Color(0.0, 0.5, 0.5, 1.0),
-                        10
+                        5
                     ),
                     new Color(0.0, 0.8, 0.0, 1.0)
                 ),
@@ -71,7 +71,7 @@ namespace rt
                         new Color(0.0, 0.1, 0.1, 1.0),
                         new Color(0.0, 0.3, 0.3, 1.0),
                         new Color(0.0, 0.5, 0.5, 1.0),
-                        10
+                        100
                     ),
                     new Color(0.0, 0.8, 0.8, 1.0)
                 ),
@@ -82,7 +82,7 @@ namespace rt
                         new Color(0.1, 0.0, 0.1, 1.0),
                         new Color(0.3, 0.0, 0.3, 1.0),
                         new Color(0.5, 0.0, 0.5, 1.0),
-                        10
+                        150
                     ),
                     new Color(0.8, 0.0, 0.8, 1.0)
                 ),
@@ -93,7 +93,7 @@ namespace rt
                         new Color(0.0, 0.0, 0.1, 1.0),
                         new Color(0.0, 0.0, 0.3, 1.0),
                         new Color(0.0, 0.0, 0.5, 1.0),
-                        10
+                        255
                     ),
                     new Color(0.0, 0.0, 0.8, 1.0)
                 ),
@@ -104,36 +104,41 @@ namespace rt
                         new Color(0.07, 0.07, 0.07, 1.0),
                         new Color(0.2, 0.2, 0.2, 1.0),
                         new Color(0.3, 0.4, 0.4, 1.0),
-                        10
+                        1
                     ),
                     new Color(0.07, 0.07, 0.07, 1.0)
                 )
             };
 
+			// var geometries = GenerateSpheres(20);
+
             var lights = new Light[]
             {
                 new Light(
                     new Vector(-50.0, 0.0, 0.0),
-                    new Color(0.8, 0.8, 0.8, 1.0),
-                    new Color(0.8, 0.8, 0.8, 1.0),
-                    new Color(0.8, 0.8, 0.8, 1.0),
+                    new Color(1.0, 0.0, 0.0, 1.0),
+                    new Color(1.0, 0.0, 0.0, 1.0),
+                    new Color(1.0, 0.0, 0.0, 1.0),
                     1.0
                 ),
                 new Light(
                     new Vector(20.0, 20.0, 0.0),
-                    new Color(0.8, 0.8, 0.8, 1.0),
-                    new Color(0.8, 0.8, 0.8, 1.0),
-                    new Color(0.8, 0.8, 0.8, 1.0),
+                    new Color(0.0, 1.0, 0.0, 1.0),
+                    new Color(0.0, 1.0, 0.0, 1.0),
+                    new Color(0.0, 1.0, 0.0, 1.0),
                     1.0
                 ),
                 new Light(
                     new Vector(0.0, 0.0, 300.0),
-                    new Color(0.8, 0.8, 0.8, 1.0),
-                    new Color(0.8, 0.8, 0.8, 1.0),
-                    new Color(0.8, 0.8, 0.8, 1.0),
+                    new Color(0.0, 0.0, 1.0, 1.0),
+                    new Color(0.0, 0.0, 1.0, 1.0),
+                    new Color(0.0, 0.0, 1.0, 1.0),
                     1.0
                 )
             };
+
+			// var lights = GenerateLights(4);
+
             var rt = new RayTracer(geometries, lights);
 
             const int width = 800;
@@ -180,5 +185,91 @@ namespace rt
 
             Task.WaitAll(tasks);
         }
+
+		const double minPos = -100.0;
+		const double maxPos = 100.0;
+
+		const double minRadius = 5.0;
+		const double maxRadius = 50.0;
+
+		const int minShininess = 1;
+		const int maxShininess = 128;
+
+
+
+
+		public static Geometry[] GenerateSpheres(int n) {
+			var geometries = new Geometry[n];
+
+			var random = new Random();
+
+			for (int i = 0; i < n; i++) {
+				var position = new Vector(
+					random.NextDouble() * (maxPos - minPos) + minPos,
+					random.NextDouble() * (maxPos - minPos) + minPos,
+					random.NextDouble() * (maxPos - minPos) + minPos
+				);
+				var radius = random.NextDouble() * (maxRadius - minRadius) + minRadius;
+
+				var ambient = new Color(
+					random.NextDouble() / 5.0,
+					random.NextDouble() / 5.0,
+					random.NextDouble() / 5.0,
+					1.0
+				);	
+				// var diffuseMultiplier = random.NextDouble() / 5.0;
+				// var specularMultiplier = random.NextDouble() / 2.0;
+				var shininess = (int)Math.Floor(random.NextDouble() * (maxShininess - minShininess) + minShininess);
+
+				geometries[i] = new Sphere(
+					position,
+					radius,
+					new Material(
+						ambient,
+						ambient * 2.0,
+						ambient * 5.0,
+						shininess
+					),
+					Color.WHITE - ambient
+				);
+			}
+
+			return geometries;
+		}
+
+		public static Light[] GenerateLights(int n) {
+			var lights = new Light[n];
+
+			var random = new Random();
+
+			for (int i = 0; i < n; i++) {
+				var position = new Vector(
+					random.NextDouble() * (maxPos - minPos) + minPos,
+					random.NextDouble() * (maxPos - minPos) + minPos,
+					random.NextDouble() * (maxPos - minPos) + minPos
+				);
+
+				var color = new Color(
+					random.NextDouble(),
+					random.NextDouble(),
+					random.NextDouble(),
+					1.0
+				);
+
+
+				var intensity = random.NextDouble();
+
+				lights[i] = new Light(
+					position,
+					color,
+					color,
+					color,
+					intensity
+				);
+
+			}
+
+			return lights;
+		}
     }
 }

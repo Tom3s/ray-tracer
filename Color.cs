@@ -72,5 +72,7 @@ namespace rt
         {
             return new Color(c.Red / k, c.Green / k, c.Blue / k, c.Alpha / k);
         }
+
+		public static Color WHITE = new Color(1.0, 1.0, 1.0, 1.0);
     }
 }
