@@ -46,10 +46,21 @@ namespace rt
 
         private bool IsLit(Vector point, Light light)
         {
-            // ADD CODE HERE: Detect whether the given point has a clear line of sight to the given light
-            return true;
+			var ray = new Line(point, light.Position - point);
+			var intersection = FindFirstIntersection(ray, 0.0, 5000.0);
+
+			return !intersection.Valid || !intersection.Visible;
         }
 
+		private bool isPointLit(Vector point)
+		{
+			foreach (var light in lights) {
+				if (IsLit(point, light)) {
+					return true;
+				}
+			}
+			return false;
+		}
         public void Render(Camera camera, int width, int height, string filename)
         {
             var background = new Color();
@@ -57,13 +68,11 @@ namespace rt
 
             var image = new Image(width, height);
 
-            var vecW = camera.Direction * camera.ViewPlaneDistance;
+            var distanceToViewplane = camera.Direction * camera.ViewPlaneDistance;
             for (var i = 0; i < width; i++)
             {
                 for (var j = 0; j < height; j++)
                 {
-                    // ADD CODE HERE: Implement pixel color calculation
-
 					var u = ImageToViewPlane(i, width, camera.ViewPlaneWidth);
 					var v = ImageToViewPlane(j, height, camera.ViewPlaneHeight);
 
@@ -71,16 +80,20 @@ namespace rt
 					var vecV = camera.Up * v;
 
 					var vecUV = vecU + vecV;
-					var vecS = camera.Position + vecW + vecUV;
+					var vecS = camera.Position + distanceToViewplane + vecUV;
 
-					var ray = new Line(camera.Position, vecS - camera.Position);
+					var ray = new Line(camera.Position, vecS);
 
 					var intersection = FindFirstIntersection(ray, camera.FrontPlaneDistance, camera.BackPlaneDistance);
 
 
 					if (intersection.Valid && intersection.Visible) {
 						var color = intersection.Geometry.Color;
-                    	image.SetPixel(i, j, background + color);
+						if (!isPointLit(intersection.Position)) {
+                    		image.SetPixel(i, j, background + color * 0.2);
+						} else {
+                    		image.SetPixel(i, j, background + color);
+						}
 					} else {
                     	image.SetPixel(i, j, background);
 					}

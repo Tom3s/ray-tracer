@@ -65,7 +65,7 @@ namespace rt
 
         public static Color operator *(Color c, double k)
         {
-            return new Color(c.Red * k, c.Green * k, c.Blue * k, c.Alpha * k);
+            return new Color(c.Red * k, c.Green * k, c.Blue * k, c.Alpha); //, c.Alpha * k);
         }
 
         public static Color operator /(Color c, double k)
