@@ -149,7 +149,7 @@ namespace rt
             var up = new Vector(-Math.Sqrt(0.125), -Math.Sqrt(0.75), Math.Sqrt(0.125)).Normalize();
             var first = (middle ^ up).Normalize();
             const double dist = 150.0;
-            const int n = 10; // TODO: 90
+            const int n = 60; // TODO: 90
             const double step = 360.0 / n;
 
             var tasks = new Task[n];
