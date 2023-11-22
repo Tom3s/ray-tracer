@@ -4,6 +4,16 @@ namespace rt
 {
     public class Color
     {
+        public static Color RED =     new Color(1.0, 0.0, 0.0, 1.0); 
+        public static Color GREEN =   new Color(0.0, 1.0, 0.0, 1.0); 
+        public static Color BLUE =    new Color(0.0, 0.0, 1.0, 1.0); 
+        public static Color YELLOW =  new Color(1.0, 1.0, 0.0, 1.0); 
+        public static Color MAGENTA = new Color(1.0, 0.0, 1.0, 1.0); 
+        public static Color CYAN =    new Color(0.0, 1.0, 1.0, 1.0); 
+        public static Color WHITE =   new Color(1.0, 1.0, 1.0, 1.0); 
+        public static Color ORANGE =  new Color(1.0, 0.5, 0.0, 1.0); 
+        public static Color GRAY =  new Color(0.2, 0.2, 0.2, 1.0);
+
         public double Red { get; set; }
         public double Green { get; set; }
         public double Blue { get; set; }
@@ -65,14 +75,12 @@ namespace rt
 
         public static Color operator *(Color c, double k)
         {
-            return new Color(c.Red * k, c.Green * k, c.Blue * k, c.Alpha); //, c.Alpha * k);
+            return new Color(c.Red * k, c.Green * k, c.Blue * k, c.Alpha * k);
         }
 
         public static Color operator /(Color c, double k)
         {
             return new Color(c.Red / k, c.Green / k, c.Blue / k, c.Alpha / k);
         }
-
-		public static Color WHITE = new Color(1.0, 1.0, 1.0, 1.0);
     }
 }

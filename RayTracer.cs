@@ -44,13 +44,18 @@ namespace rt
 			return intersection;
 		}
 
+		private double intersectionDelta = 0.0001;
 		private bool IsLit(Vector point, Light light)
-		{
-			var ray = new Line(point, light.Position - point);
-			var intersection = FindFirstIntersection(ray, 0.0, 5000.0);
+        {
 
-			return !intersection.Valid || !intersection.Visible;
-		}
+            Line line = new Line(light.Position, point);
+            Vector firstIntersection = FindFirstIntersection(line, 0, (point - light.Position).Length() + 1000).Position;
+
+
+            return Math.Abs(firstIntersection.X - point.X) < intersectionDelta &&
+                Math.Abs(firstIntersection.Y - point.Y) < intersectionDelta &&
+                Math.Abs(firstIntersection.Z - point.Z) < intersectionDelta;
+        }
 
 		private bool isPointLit(Vector point)
 		{
@@ -64,39 +69,47 @@ namespace rt
 			return false;
 		}
 
-		private Color CalculateColor(Intersection intersection)
+		private Color CalculateColor(Intersection intersection, Camera camera)
 		{
 			var color = new Color(0.0, 0.0, 0.0, 1.0);
 
 			foreach (var light in lights) {
 				var partialColor = intersection.Geometry.Material.Ambient * light.Ambient;
 
-				var normal = intersection.Geometry.Normal(intersection.Position);
-				var towardsLight = (light.Position - intersection.Position).Normalize();
+				if (!IsLit(intersection.Position, light)){
+					color += partialColor;
+				} else {
+					var normal = intersection.Normal;
+					var towardsLight = (light.Position - intersection.Position).Normalize();
 
-				if (normal * towardsLight > 0) {
-					partialColor += intersection.Geometry.Material.Diffuse * light.Diffuse * (normal * towardsLight);
+					if (normal * towardsLight > 0) {
+						partialColor += intersection.Geometry.Material.Diffuse * light.Diffuse * (normal * towardsLight);
+					}
+
+					// var towardsCamera = (intersection.Line.origin - intersection.Position).Normalize();
+					var towardsCamera = (camera.Position - intersection.Position).Normalize();
+					var reflection = (normal * 2 * (normal * towardsLight) - towardsLight).Normalize();
+
+					if (towardsCamera * reflection > 0) {
+						partialColor += intersection.Geometry.Material.Specular * light.Specular * Math.Pow(towardsCamera * reflection, intersection.Geometry.Material.Shininess);
+					}
+
+					color += partialColor * light.Intensity;
 				}
-
-				var towardsCamera = (intersection.Line.origin - intersection.Position).Normalize();
-				var reflection = (normal * 2 * (normal * towardsLight) - towardsLight).Normalize();
-
-				if (towardsCamera * reflection > 0) {
-					partialColor += intersection.Geometry.Material.Specular * light.Specular * Math.Pow(towardsCamera * reflection, intersection.Geometry.Material.Shininess);
-				}
-
-				color += partialColor * light.Intensity;
 			}
 			return color;
 		}
 		public void Render(Camera camera, int width, int height, string filename)
 		{
-			var background = new Color();
+			var background = Color.GRAY;
 			var viewParallel = (camera.Up ^ camera.Direction).Normalize();
 
 			var image = new Image(width, height);
 
 			var distanceToViewplane = camera.Direction * camera.ViewPlaneDistance;
+
+			Console.WriteLine("Starting render for " + filename);
+
 			for (var i = 0; i < width; i++)
 			{
 				for (var j = 0; j < height; j++)
@@ -104,8 +117,8 @@ namespace rt
 					var u = ImageToViewPlane(i, width, camera.ViewPlaneWidth);
 					var v = ImageToViewPlane(j, height, camera.ViewPlaneHeight);
 
-					var vecU = viewParallel * u;
-					var vecV = camera.Up * v;
+					var vecU = -viewParallel * u;
+					var vecV = -camera.Up * v;
 
 					var vecUV = vecU + vecV;
 					var vecS = camera.Position + distanceToViewplane + vecUV;
@@ -117,19 +130,13 @@ namespace rt
 
 					if (intersection.Valid && intersection.Visible)
 					{
-						var color = intersection.Geometry.Color;
-						// if (!isPointLit(intersection.Position)) {
-						// 	image.SetPixel(i, j, background + color * 0.2);
-						// } else {
-						// 	image.SetPixel(i, j, background + color);
-						// }
-						image.SetPixel(i, j, background + CalculateColor(intersection));
+						image.SetPixel(i, j, CalculateColor(intersection, camera));
 					}
 					else
 					{
 						image.SetPixel(i, j, background);
 					}
-
+					// Console.Write(".");
 				}
 			}
 
