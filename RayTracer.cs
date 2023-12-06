@@ -51,6 +51,7 @@ namespace rt
             Line line = new Line(light.Position, point);
             Vector firstIntersection = FindFirstIntersection(line, 0, (point - light.Position).Length() + 1000).Position;
 
+			if (firstIntersection == null) return false;
 
             return Math.Abs(firstIntersection.X - point.X) < intersectionDelta &&
                 Math.Abs(firstIntersection.Y - point.Y) < intersectionDelta &&
@@ -74,7 +75,7 @@ namespace rt
 			var color = new Color(0.0, 0.0, 0.0, 1.0);
 
 			foreach (var light in lights) {
-				var partialColor = intersection.Geometry.Material.Ambient * light.Ambient;
+				var partialColor = intersection.Material.Ambient * light.Ambient;
 
 				if (!IsLit(intersection.Position, light)){
 					color += partialColor;
@@ -83,7 +84,7 @@ namespace rt
 					var towardsLight = (light.Position - intersection.Position).Normalize();
 
 					if (normal * towardsLight > 0) {
-						partialColor += intersection.Geometry.Material.Diffuse * light.Diffuse * (normal * towardsLight);
+						partialColor += intersection.Material.Diffuse * light.Diffuse * (normal * towardsLight);
 					}
 
 					// var towardsCamera = (intersection.Line.origin - intersection.Position).Normalize();
@@ -91,7 +92,7 @@ namespace rt
 					var reflection = (normal * 2 * (normal * towardsLight) - towardsLight).Normalize();
 
 					if (towardsCamera * reflection > 0) {
-						partialColor += intersection.Geometry.Material.Specular * light.Specular * Math.Pow(towardsCamera * reflection, intersection.Geometry.Material.Shininess);
+						partialColor += intersection.Material.Specular * light.Specular * Math.Pow(towardsCamera * reflection, intersection.Material.Shininess);
 					}
 
 					color += partialColor * light.Intensity;

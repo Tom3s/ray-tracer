@@ -41,10 +41,16 @@ namespace rt
 				new Ellipsoid(new Vector(  0.0,  10.0, 135.0), new Vector(0.5, 5.0, 5.0), 5.0, Color.CYAN),
 				new Ellipsoid(new Vector( 35.0, -25.0, 135.0), new Vector(5.0, 0.5, 5.0), 5.0, Color.MAGENTA),
 
-				new Sphere(   new Vector(-25.0, -50.0,  75.0),                           25.0, Color.ORANGE)
+				new Sphere(   new Vector(-25.0, -50.0,  75.0),                           25.0, Color.ORANGE),
+
+				new RawCtMask("./walnut.dat", "./walnut.raw", new Vector(-5.0, -20.0, 105.0), 0.2,
+					new ColorMap()
+						.Add(1, 1, new Color(0.7, 0.0, 0.0, 0.05))
+						.Add(2, 2, new Color(0.0, 0.7, 0.0, 1.0))
+				),
 			};
 
-			var lights = new Light[]
+			var lights = new[]
 			{
 				new Light(new Vector( 65.0,  40.0,  90.0), new Color(0.8, 0.8, 0.8, 1.0), new Color(0.8, 0.8, 0.8, 1.0), new Color(0.8, 0.8, 0.8, 1.0), 1.0),
 				new Light(new Vector(-10.0,  40.0, 165.0), new Color(0.8, 0.8, 0.8, 1.0), new Color(0.8, 0.8, 0.8, 1.0), new Color(0.8, 0.8, 0.8, 1.0), 1.0),
@@ -53,9 +59,10 @@ namespace rt
 			};
 			var rt = new RayTracer(geometries, lights);
 
-
 			const int width = 800;
 			const int height = 600;
+			// const int width = 400;
+			// const int height = 300;
 
 			// Go around an approximate middle of the scene and generate frames
 			var middle = new Vector(0.0, -5.0, 100.0);
@@ -65,38 +72,81 @@ namespace rt
 			const int n = 90;
 			const double step = 360.0 / n;
 
+			// var tasks = new Task[n];
+			// for (var i = 0; i < n; i++)
+			// {
+			//     var ind = new[]{i};
+			//     tasks[i] = Task.Run(() =>
+			//     {
+			//         var k = ind[0];
+			//         var a = (step * k) * Math.PI / 180.0;
+			//         var ca =  Math.Cos(a);
+			//         var sa =  Math.Sin(a);
+
+			//         var dir = first * ca + (up ^ first) * sa + up * (up * first) * (1.0 - ca);
+
+			//         var camera = new Camera(
+			//             middle - dir * dist,
+			//             dir,
+			//             up,
+			//             65.0,
+			//             160.0,
+			//             120.0,
+			//             0.0,
+			//             1000.0
+			//         );
+
+			//         var filename = frames+"/" + $"{k + 1:000}" + ".png";
+
+			//         rt.Render(camera, width, height, filename);
+			//         Console.WriteLine($"Frame {k+1}/{n} completed");
+			//     });
+			// }
+
+			// Task.WaitAll(tasks);
+			var batchSize = 5;
 			var tasks = new Task[n];
-			for (var i = 0; i < n; i++)
+
+			for (var batchStart = 0; batchStart < n; batchStart += batchSize)
 			{
-				var ind = new[] { i };
-				tasks[i] = Task.Run(() =>
+				var batchTasks = new List<Task>();
+
+				for (var i = batchStart; i < Math.Min(batchStart + batchSize, n); i++)
 				{
-					var k = ind[0];
-					var a = (step * k) * Math.PI / 180.0;
-					var ca = Math.Cos(a);
-					var sa = Math.Sin(a);
+					var ind = new[] { i };
 
-					var dir = first * ca + (up ^ first) * sa + up * (up * first) * (1.0 - ca);
+					var task = Task.Run(() =>
+					{
+						var k = ind[0];
+						var a = (step * k) * Math.PI / 180.0;
+						var ca = Math.Cos(a);
+						var sa = Math.Sin(a);
 
-					var camera = new Camera(
-						middle - dir * dist,
-						dir,
-						up,
-						65.0,
-						160.0,
-						120.0,
-						0.0,
-						1000.0
-					);
+						var dir = first * ca + (up ^ first) * sa + up * (up * first) * (1.0 - ca);
 
-					var filename = frames + "/" + $"{k + 1:000}" + ".png";
+						var camera = new Camera(
+							middle - dir * dist,
+							dir,
+							up,
+							65.0,
+							160.0,
+							120.0,
+							0.0,
+							1000.0
+						);
 
-					rt.Render(camera, width, height, filename);
-					Console.WriteLine($"Frame {k + 1}/{n} completed");
-				});
+						var filename = frames + "/" + $"{k + 1:000}" + ".png";
+
+						rt.Render(camera, width, height, filename);
+						Console.WriteLine($"Frame {k + 1}/{n} completed");
+					});
+
+					batchTasks.Add(task);
+				}
+
+				Task.WaitAll(batchTasks.ToArray());
 			}
 
-			Task.WaitAll(tasks);
 		}
 	}
 }

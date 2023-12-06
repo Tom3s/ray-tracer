@@ -75,7 +75,9 @@ namespace rt
 				this,
 				line,
 				distance,
-				normal // Include the normal in the Intersection constructor.
+				normal, // Include the normal in the Intersection constructor.
+				this.Material,
+				this.Color
 			);
 		}
 
